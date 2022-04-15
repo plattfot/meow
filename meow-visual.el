@@ -181,7 +181,7 @@ we simply inc/dec idx and redraw the overlays. Only count for the first time."
                      (cl-return))
                  (cl-return))))))
 
-(defun meow--highlight-num-positions (num)
+(defun meow--highlight-num-positions (num &optional force-reverse)
   (setq meow--visual-command this-command)
   (meow--remove-expand-highlights)
   (meow--remove-match-highlights)
@@ -200,7 +200,7 @@ we simply inc/dec idx and redraw the overlays. Only count for the first time."
                    (make-list 10 'meow-position-highlight-number-2)
                    (make-list 10 'meow-position-highlight-number-3)))
                 num))
-        (nav-function (if (meow--direction-backward-p)
+        (nav-function (if (or (meow--direction-backward-p) force-reverse)
                           (car meow--expand-nav-function)
                         (cdr meow--expand-nav-function))))
     (meow--highlight-num-positions-1 nav-function faces bound)
@@ -220,14 +220,14 @@ we simply inc/dec idx and redraw the overlays. Only count for the first time."
       (let ((type (cdr sel)))
         (member type '(word line block find till))))))
 
-(defun meow--maybe-highlight-num-positions (&optional nav-functions)
+(defun meow--maybe-highlight-num-positions (&optional nav-functions force-reverse)
   (when (and (meow-normal-mode-p)
              (meow--select-expandable-p))
     (setq meow--expand-nav-function (or nav-functions meow--expand-nav-function))
     (when (and (not (member major-mode meow-expand-exclude-mode-list))
                meow--expand-nav-function)
       (let ((num (alist-get (cdr (meow--selection-type)) meow-expand-hint-counts)))
-        (meow--highlight-num-positions num)))))
+        (meow--highlight-num-positions num force-reverse)))))
 
 (provide 'meow-visual)
 ;;; meow-visual.el ends here
