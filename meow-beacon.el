@@ -450,7 +450,8 @@ MATCH is the search regexp."
     (secondary-selection-from-region)
     ;; switch to beacon mode and preserve current selection
     (let ((meow--selection meow--selection))
-      (meow-beacon-mode)))
+      (meow-beacon-mode)
+      (activate-mark)))
   (let ((backward (meow--direction-backward-p)))
     (goto-char (if backward
                    (overlay-start mouse-secondary-overlay)
