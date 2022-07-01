@@ -146,8 +146,9 @@ we simply inc/dec idx and redraw the overlays. Only count for the first time."
 (defun meow--format-full-width-number (n)
   (alist-get n meow-full-width-number-position-chars))
 
-(defun meow--highlight-num-positions-1 (nav-function faces bound)
+(defun meow--highlight-num-positions-1 (nav-function faces bound &optional start)
   (save-mark-and-excursion
+    (when start (goto-char start))
     (let ((pos (point))
           (i 1))
       (cl-loop for face in faces
@@ -181,7 +182,7 @@ we simply inc/dec idx and redraw the overlays. Only count for the first time."
                      (cl-return))
                  (cl-return))))))
 
-(defun meow--highlight-num-positions (num)
+(defun meow--highlight-num-positions (num &optional start)
   (setq meow--visual-command this-command)
   (meow--remove-expand-highlights)
   (meow--remove-match-highlights)
@@ -203,7 +204,7 @@ we simply inc/dec idx and redraw the overlays. Only count for the first time."
         (nav-function (if (meow--direction-backward-p)
                           (car meow--expand-nav-function)
                         (cdr meow--expand-nav-function))))
-    (meow--highlight-num-positions-1 nav-function faces bound)
+    (meow--highlight-num-positions-1 nav-function faces bound start)
     (when meow--highlight-timer
       (cancel-timer meow--highlight-timer)
       (setq meow--highlight-timer nil))
@@ -225,8 +226,12 @@ we simply inc/dec idx and redraw the overlays. Only count for the first time."
     (setq meow--expand-nav-function (or nav-functions meow--expand-nav-function))
     (when (and (not (member major-mode meow-expand-exclude-mode-list))
                meow--expand-nav-function)
-      (let ((num (alist-get (cdr (meow--selection-type)) meow-expand-hint-counts)))
-        (meow--highlight-num-positions num)))))
+      (let ((num (alist-get (cdr (meow--selection-type)) meow-expand-hint-counts))
+            (start (when (meow-beacon-mode-p)
+                     (if (meow--direction-backward-p)
+                         (overlay-start mouse-secondary-overlay)
+                       (overlay-end mouse-secondary-overlay)))))
+        (meow--highlight-num-positions num start)))))
 
 (provide 'meow-visual)
 ;;; meow-visual.el ends here
