@@ -215,14 +215,13 @@ we simply inc/dec idx and redraw the overlays. Only count for the first time."
            #'meow--remove-expand-highlights))))
 
 (defun meow--select-expandable-p ()
-  (when (meow-normal-mode-p)
+  (when (or (meow-normal-mode-p) (meow-beacon-mode-p))
     (when-let ((sel (meow--selection-type)))
       (let ((type (cdr sel)))
         (member type '(word line block find till))))))
 
 (defun meow--maybe-highlight-num-positions (&optional nav-functions)
-  (when (and (meow-normal-mode-p)
-             (meow--select-expandable-p))
+  (when (meow--select-expandable-p)
     (setq meow--expand-nav-function (or nav-functions meow--expand-nav-function))
     (when (and (not (member major-mode meow-expand-exclude-mode-list))
                meow--expand-nav-function)
