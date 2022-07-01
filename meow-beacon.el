@@ -411,6 +411,37 @@ MATCH is the search regexp."
 (defun meow-beacon-expand (arg)
   "TODO"
   (interactive "p")
+  (if (< arg 0)
+      (meow-beacon--shrink (- arg))
+    (meow-beacon--expand arg)))
+
+(defun meow-beacon--shrink (n)
+  "TODO"
+  (let* ((backward (meow--direction-backward-p))
+         (positions (sort (append (region-bounds)
+                                  (mapcar (lambda (ov) (cons (overlay-start ov)
+                                                             (overlay-end ov)))
+                                          meow--beacon-overlays))
+                          (lambda (p1 p2) (< (car p1) (car p2)))))
+         (len (length positions))
+         (idx (if backward n (- len n 1))))
+    (if (< 0 idx (1- len))
+        (let ((beg (car (nth idx positions)))
+              (end (cdr (nth idx positions))))
+          (set-mark beg)
+          (goto-char end)
+          (when backward
+            (exchange-point-and-mark))
+          (activate-mark)
+          (move-overlay mouse-secondary-overlay
+                        (if backward beg (overlay-start mouse-secondary-overlay))
+                        (if backward (overlay-end mouse-secondary-overlay) end)))
+      (delete-overlay mouse-secondary-overlay)
+      (meow--beacon-remove-overlays)
+      (meow--switch-state 'normal))))
+
+(defun meow-beacon--expand (n)
+  "TODO"
   (if (meow-beacon-mode-p)
       (setq meow--selection meow--beacon-last-selection)
     (unless (region-active-p)
@@ -424,7 +455,7 @@ MATCH is the search regexp."
     (goto-char (if backward
                    (overlay-start mouse-secondary-overlay)
                  (overlay-end mouse-secondary-overlay)))
-    (dotimes (_ arg)
+    (dotimes (_ n)
       (pcase (car meow--selection)
         (`(,_ . find)
          (if backward (meow--find-continue-backward) (meow--find-continue-forward)))
