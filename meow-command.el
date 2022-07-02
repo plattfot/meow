@@ -1597,7 +1597,7 @@ This command is a replacement for build-in `kmacro-end-macro'."
 (defun meow-grab ()
   "Create secondary selection or a marker if no region available."
   (interactive)
-  (if (region-active-p)
+  (if (and (region-active-p) (not (meow--beacon-inside-secondary-selection)))
       (secondary-selection-from-region)
     (delete-overlay mouse-secondary-overlay)
     (setq mouse-secondary-start (make-marker))
