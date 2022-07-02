@@ -47,7 +47,6 @@
 
 (defvar-local meow--beacon-overlays nil)
 (defvar-local meow--beacon-insert-enter-key nil)
-(defvar-local meow--beacon-last-selection nil)
 
 (defun meow--beacon-add-overlay-at-point (pos)
   "Create an overlay to draw a fake cursor as beacon at POS."
@@ -392,10 +391,10 @@ MATCH is the search regexp."
   "Update overlays for BEACON state."
   (meow--beacon-remove-overlays)
   (when (meow--beacon-inside-secondary-selection)
-    (let* ((ex (car (meow--selection-type)))
+    ;; make sure current selection is not modified
+    (let* ((meow--selection meow--selection)
+           (ex (car (meow--selection-type)))
            (type (cdr (meow--selection-type))))
-      ;; keep track of meow--selection since it may get modified below
-      (setq meow--beacon-last-selection meow--selection)
       (cl-case type
         ((nil transient) (meow--add-beacons-for-char))
         ((word) (if (not (eq 'expand ex))
@@ -442,8 +441,7 @@ MATCH is the search regexp."
 
 (defun meow-beacon--expand (n)
   "TODO"
-  (if (meow-beacon-mode-p)
-      (setq meow--selection meow--beacon-last-selection)
+  (unless (meow-beacon-mode-p)
     (unless (region-active-p)
       (set-mark (point))
       (activate-mark))
