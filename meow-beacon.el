@@ -88,15 +88,13 @@ Non-nil BACKWARD means backward direction."
 
 (defun meow--beacon-shrink-selection ()
   "Shrink selection to one char width."
-  (if meow-use-cursor-position-hack
-      (let ((m (if (meow--direction-forward-p)
-                   (1- (point))
-                 (1+ (point)))))
-        (meow--cancel-selection)
-        (thread-first
-          (meow--make-selection '(select . transient) m (point))
-          (meow--select)))
-    (meow--cancel-selection)))
+  (let ((m (if (meow--direction-forward-p)
+               (1- (point))
+             (1+ (point)))))
+    (meow--cancel-selection)
+    (thread-first
+      (meow--make-selection '(select . transient) m (point))
+      (meow--select))))
 
 (defun meow--beacon-apply-command (cmd)
   "Apply CMD in BEACON state."
